@@ -17,16 +17,18 @@ if sys.version_info[0] == 2:
 else:
     import xml.etree.ElementTree as ET
 
-VOC_CLASSES = (  # always index 0
-    'aeroplane', 'bicycle', 'bird', 'boat',
-    'bottle', 'bus', 'car', 'cat', 'chair',
-    'cow', 'diningtable', 'dog', 'horse',
-    'motorbike', 'person', 'pottedplant',
-    'sheep', 'sofa', 'train', 'tvmonitor')
+# VOC_CLASSES = (  # always index 0
+#    'aeroplane', 'bicycle', 'bird', 'boat',
+#    'bottle', 'bus', 'car', 'cat', 'chair',
+#    'cow', 'diningtable', 'dog', 'horse',
+#    'motorbike', 'person', 'pottedplant',
+#    'sheep', 'sofa', 'train', 'tvmonitor')
+
+VOC_CLASSES = ('1','2','3','4','5','6','7','8','9', '10')
 
 # note: if you used our download scripts, this should be right
-VOC_ROOT = osp.join(HOME, "data/VOCdevkit/")
-
+# VOC_ROOT = osp.join(HOME, "data/VOCdevkit/")
+VOC_ROOT = '/bigtemp/jl4sh/courses/cs-6501-004-DLVR/ssd/ssd.pytorch/data/VOCdevkit/'
 
 class VOCAnnotationTransform(object):
     """Transforms a VOC annotation into a Tensor of bbox coords and label index
@@ -56,7 +58,8 @@ class VOCAnnotationTransform(object):
         """
         res = []
         for obj in target.iter('object'):
-            difficult = int(obj.find('difficult').text) == 1
+            # difficult = int(obj.find('difficult').text) == 1
+            difficult = False
             if not self.keep_difficult and difficult:
                 continue
             name = obj.find('name').text.lower().strip()
@@ -95,7 +98,7 @@ class VOCDetection(data.Dataset):
     """
 
     def __init__(self, root,
-                 image_sets=[('2007', 'trainval'), ('2012', 'trainval')],
+                 image_sets=[('2007', 'trainval')],
                  transform=None, target_transform=VOCAnnotationTransform(),
                  dataset_name='VOC0712'):
         self.root = root
@@ -104,7 +107,7 @@ class VOCDetection(data.Dataset):
         self.target_transform = target_transform
         self.name = dataset_name
         self._annopath = osp.join('%s', 'Annotations', '%s.xml')
-        self._imgpath = osp.join('%s', 'JPEGImages', '%s.jpg')
+        self._imgpath = osp.join('%s', 'JPEGImages', '%s.png')
         self.ids = list()
         for (year, name) in image_sets:
             rootpath = osp.join(self.root, 'VOC' + year)
@@ -124,6 +127,7 @@ class VOCDetection(data.Dataset):
 
         target = ET.parse(self._annopath % img_id).getroot()
         img = cv2.imread(self._imgpath % img_id)
+        #print(self._imgpath%img_id)
         height, width, channels = img.shape
 
         if self.target_transform is not None:
